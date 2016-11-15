@@ -1,0 +1,16 @@
+{
+  "name": "excuse-generator",
+  "version": "1.0.0",
+  "description": "Simple script that creates excuses for a social event randomly, based on Stratchey's  \"Love Letters\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ibotto1",
+  "license": "ISC",
+  "dependencies": {
+    "chance": "^1.0.4",
+    "commander": "^2.9.0",
+    "word-wrap": "^1.1.0"
+  }
+}

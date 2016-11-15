@@ -1,0 +1,10 @@
+
+  Usage: excuse_generator [options]
+
+  Options:
+
+    -h, --help              output usage information
+    -V, --version           output the version number
+    -w , --width [value],   Width
+    -s,--sentences [value]  Sentences
+
