@@ -1,0 +1,25 @@
+{
+  "name": "ai_convo",
+  "version": "1.0.0",
+  "description": "Repository of CTH2016 assignments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibotto/cth2016-assignments.git"
+  },
+  "author": "ibotto1",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ibotto/cth2016-assignments/issues"
+  },
+  "homepage": "https://github.com/ibotto/cth2016-assignments#readme",
+  "dependencies": {
+    "chance": "^1.0.4",
+    "commander": "^2.9.0",
+    "express": "^4.14.0",
+    "socket.io": "^1.6.0"
+  }
+}
