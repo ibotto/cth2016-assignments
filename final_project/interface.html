@@ -1,0 +1,178 @@
+<html>
+
+	<head> 
+
+		<style>
+
+			body {background-color: powderblue;}
+			h2 {
+				color: gray;
+				font-family: courier;
+				font-size: 200%; 
+			}
+
+			p {
+				color: white;
+				font-family: helvetica; 
+			}
+		</style> 
+	</head>
+
+		<header>
+		  <h2> All Levels Easy Reader: A Prototype </h2> 
+  		   <p> Welcome to our literacy generator that allows you to adjust text reading levels! <br>   
+		    Please enter the text that you would like to change in left box, and then click the "Convert Text" button. 
+		    Your new text will appear in the righthand box. <br> If you want to run the program again with the same text, click the "Try Again!" button. </p>
+		</header> 
+
+		<style> 
+
+			.frame {
+				width: 30em;
+				display: inline-block;
+			} 
+
+			textarea {
+				width: 100%;
+				border: 1px solid #888;
+				padding: 3px;
+				font-size: 15;
+			}
+		</style> 
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.4/chance.min.js"></script> 
+
+	</head>
+
+	<body> 
+
+		
+
+		<div class = "frame">
+			<label style = "font-family: helvetica"> Input Text: </label>
+			<textarea id = "input_text" rows = "35" cols = "35"></textarea>
+			<button onclick="adjust_text();"> Convert text! </button> 
+		</div> 
+
+
+		<div class = "frame">
+			<label style = "font-family: helvetica"> Output text: </label>
+			<textarea id = "output_text" rows = "35" cols = "35"></textarea>
+			<button onclick="adjust_text();"> Try Again! </button> 
+		</div> 
+
+		<script src = "/socket.io/socket.io.js"></script> 
+
+		<script>
+
+			var socket = io().connect("http://localhost:8088"); 
+
+			socket.on('connect', function (data){
+				console.log("connected");
+			}); 
+
+			socket.on('tagged text', function(msg){
+				console.log("altered text: " + msg);
+				process_tags(msg);				
+			});
+
+//-----------------------------------------------------------------------------------------
+
+		//establish global variable of the initial text that the user entered
+
+		var initial_text = document.getElementById("input_text").value; 
+
+		//initialize the beginning of the text adjustment process by requesting the pos tags for the text entered
+
+		function adjust_text(){
+
+			initial_text = document.getElementById("input_text").value; 
+			document.getElementById("output_text").value = initial_text;
+
+			socket.emit("request tag text", initial_text);
+
+		}
+
+		//process the tags that were assigned to the words from the initial text -- if they are adjectives or adverbs, another function will be called in order to replace them in the text
+
+		function process_tags(array_of_tags) {
+
+			for(var i = 0; i < array_of_tags.length; i++) {
+				var word = array_of_tags[i][0];
+				var tag = array_of_tags[i][1]; 
+
+				if(tag.toLowerCase() == 'jj') {
+
+					access_thesuarus(word, create_callback_adj(word));
+
+					};
+
+				}
+
+				if(tag.toLowerCase() == 'rb') {
+
+					access_thesuarus(word, create_callback_adv(word));
+
+				}
+
+			}
+		
+		//function to replace adjectives in the entered text. Uses JSON.parse in order to deal with the reponse received from the thesaurus API, accessing the adjective synonyms. Utilizes try-catch block in order to deal with mis-labeled adjectives/adverbs 
+
+		function create_callback_adj(word){
+			return function () {
+				var thesuarus = JSON.parse(this.responseText);
+				try {
+					var chosen_word = choice(thesuarus.adjective.syn);
+				}
+				catch(e) {
+					var chosen_word = choice(thesuarus.adverb.syn);
+				}
+				
+
+				console.log("sub " + chosen_word + " for " + word);
+				document.getElementById("output_text").value = document.getElementById("output_text").value.replace(word, chosen_word);
+
+			}
+		}
+
+		//function to replace adverbs in the entered text. Uses JSON.parse in order to deal with the response received from teh thesaurus API, accessing the adverb synonyms. Utilizes try-catch block in order to deal with any mis-labeled adjectives/adverbs 
+
+		function create_callback_adv(word){
+			return function () {
+				var thesuarus = JSON.parse(this.responseText);
+				try {
+					var chosen_word = choice(thesuarus.adverb.syn);
+				}
+				catch(e){
+					var chosen_word = choice(thesuarus.adjective.syn);
+				}
+				
+
+				console.log("sub " + chosen_word + " for " + word);
+				document.getElementById("output_text").value = document.getElementById("output_text").value.replace(word, chosen_word);
+
+			}
+		}
+
+		//function to choose one of the synonyms from an array of synonyms retured by the thesaurus API
+
+		function choice(array){
+			var index = chance.natural({"min": 0, "max": array.length - 1}); 
+			return array[index]; 
+		}
+
+		//function including the GET statement to access the thesaurus API 
+		function access_thesuarus(word, callback){
+
+			var url = "http://words.bighugelabs.com/api/2/c263c2a7180f8674c717ba4ce62e2cd7/" + word + "/json";
+			var xhr = new XMLHttpRequest();
+			xhr.addEventListener('load', callback);
+			xhr.open("GET", url); 
+			xhr.send(); 
+		}
+
+		</script>
+	</body> 
+</html> 
+
